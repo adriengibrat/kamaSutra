@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en">
+    <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>kamasutra demo</title>
+  </head>
+  <body>
+
+    <div style="overflow: auto; max-height: 250px;">
+      <p style="position: relative; margin: 240px 0">
+        lorem ipsum <span id="tooltip" style="position: absolute">lorem</span>
+      </p>
+    </div>
+
+    <style type="text/css">
+    .top { top: -100%; }
+    .right { right: 100px; }
+    .bottom { bottom: -100%; }
+    .left { left: 100px; }
+    </style>
+
+    <script type="text/javascript" src="kamasutra.js"></script>
+    <script type="text/javascript">
+      var position = kamasutra('top left', 'top', 'bottom left', 'right', 'bottom'),
+        element = document.getElementById('tooltip')
+      setInterval(() => position(element), 1000)
+    </script>
+  </body>
+</html>

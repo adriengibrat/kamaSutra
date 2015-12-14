@@ -1,0 +1,49 @@
+#!/usr/bin/env node
+
+var bundler = require('rollup'),
+	transpiler = require('rollup-plugin-babel'),
+	npm = require('rollup-plugin-npm'),
+	commonjs = require('rollup-plugin-commonjs')
+
+function build (entry, dest, format, moduleName) {
+	return bundler
+		.rollup({
+			entry: entry
+			, plugins: [
+				transpiler({ presets: ['es2015-rollup'] }),
+				npm({ jsnext: true, main: true }),
+				commonjs()
+			]
+		})
+		.then(function (bundle) {
+			return bundle
+				.write({
+					dest: dest,
+					format: format,
+					moduleName: moduleName
+				})
+		})
+}
+
+var project = require('./package')
+
+function bundle (format, moduleName) {
+	return build(project['jsnext:main'], project.main, format || 'umd', moduleName || project.name)
+		.then(function () { console.log('bundle ready - %s', project.main) })
+		.catch(console.trace.bind(console))
+}
+
+var path = require('path'),
+	watcher = require('chokidar'),
+	dir = path.dirname(project['jsnext:main'])
+
+console.log('watching "%s" dir', dir)
+
+watcher
+	.watch(dir, { ignored: /[\/\\]\./ })
+	.on('change', function (path) {
+		console.log('"%s" file updated', path)
+		bundle()
+	})
+
+bundle()
