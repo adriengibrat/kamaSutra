@@ -9,7 +9,7 @@
 
     <div style="overflow: auto; max-height: 250px;">
       <p style="position: relative; margin: 240px 0">
-        lorem ipsum <span id="tooltip" style="position: absolute">lorem</span>
+        lorem ipsum <span id="tooltip" style="position: absolute" class="  top     right      bottom">lorem</span>
       </p>
     </div>
 
@@ -22,9 +22,11 @@
 
     <script type="text/javascript" src="kamasutra.js"></script>
     <script type="text/javascript">
-      var position = kamasutra('top left', 'top', 'bottom left', 'right', 'bottom'),
+      var position = kamasutra(['top left', 'top', 'bottom left', 'right', 'bottom']),
         element = document.getElementById('tooltip')
-      setInterval(() => position(element), 1000)
+      //setInterval(() =>
+        position(element)
+      //, 1000)
     </script>
   </body>
 </html>

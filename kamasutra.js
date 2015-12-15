@@ -20,34 +20,42 @@
 
 		return element;
 	};
+	var arrayUnique = (function (predicate) {
+		return function (array) {
+			return array.filter(predicate);
+		};
+	})(function (value, index, array) {
+		return array.indexOf(value, index + 1) < 0;
+	});
+	var spaceRegEx = /\s+/;
+	var getContainer = function getContainer(element) {
+		return closest(closest(element, isRelative) || element.parentElement, isOverflowBox);
+	};
 	var containsBox = function containsBox(container, box) {
 		return container.top <= box.top && container.right >= box.right && container.bottom >= box.bottom && container.left <= box.left;
 	};
-	var index = (function () {
-		for (var _len = arguments.length, classNames = Array(_len), _key = 0; _key < _len; _key++) {
-			classNames[_key] = arguments[_key];
-		}
+	var index = (function (classNames) {
+		var constraint = arguments.length <= 1 || arguments[1] === undefined ? containsBox : arguments[1];
 
-		var removeClassNamesRegexp = new RegExp('(?:\\s*\\b' + classNames.join(' ').split(' ').join('\\b\\s*)|(?:\\s*\\b') + '\\b\\s*)', 'g');
+		var removeClassNamesRegexp = new RegExp('\\s*\\b(?:' + arrayUnique(classNames.join(' ').split(spaceRegEx)).join('|') + ')\\b', 'g');
 
 		return function (element) {
+			var container = arguments.length <= 1 || arguments[1] === undefined ? getContainer(element) : arguments[1];
+
 			if (!element || element.nodeType !== Node.ELEMENT_NODE || !element.parentElement) {
 				return; // wtf, not a valid element
 			}
 
-			var origin = closest(element, isRelative);
-			if (!origin) {
-				return; // element is out of flow
-			}
-
-			var container = closest(origin, isOverflowBox).getBoundingClientRect();
+			var containerBox = container.getBoundingClientRect();
 			var originalClassName = element.className || '';
-			var cleanClassName = originalClassName.replace(removeClassNamesRegexp, ' ').trim();
+			var cleanClassName = originalClassName.replace(removeClassNamesRegexp, '');
 			classNames.some(function (className) {
-				element.className = cleanClassName + ' ' + className;
-
-				return containsBox(container, element.getBoundingClientRect());
+				element.className = cleanClassName && cleanClassName + ' ' + className || className;
+				//console.log(coverBox(containerBox, element.getBoundingClientRect()))
+				return constraint(containerBox, element.getBoundingClientRect());
 			}) || (element.className = originalClassName);
+
+			return element;
 		};
 	})
 

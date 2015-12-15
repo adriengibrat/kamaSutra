@@ -8,36 +8,41 @@ let styleProperty =  (element, property) => window.getComputedStyle(element, nul
 
 		return element
 	},
+	arrayUnique = ((predicate) => (array) => array.filter(predicate))((value, index, array) => array.indexOf(value, index + 1) < 0),
+	spaceRegEx = /\s+/,
+	getContainer = (element) => closest(closest(element, isRelative) || element.parentElement, isOverflowBox),
 	containsBox = (container, box) =>
 		container.top <= box.top &&
 		container.right >= box.right &&
 		container.bottom >= box.bottom &&
-		container.left <= box.left
+		container.left <= box.left,
+	area = (box) => (box.width) * (box.height),
+	coverBox = (container, box) => area({
+			height: Math.min(container.bottom, box.bottom) - Math.max(container.top, box.top),
+			width: Math.min(container.right, box.right) - Math.max(container.left, box.left)
+		}) / area(box)
 
-export default (...classNames) => {
+export default (classNames, constraint = containsBox) => {
 	let removeClassNamesRegexp = new RegExp(
-		`(?:\\s*\\b${classNames.join(' ').split(' ').join('\\b\\s*)|(?:\\s*\\b')}\\b\\s*)`,
+		`\\s*\\b(?:${arrayUnique(classNames.join(' ').split(spaceRegEx)).join('|')})\\b`,
 		'g'
 	)
 
-	return (element) => {
+	return (element, container = getContainer(element)) => {
 		if (!element || element.nodeType !== Node.ELEMENT_NODE || !element.parentElement) {
 			return // wtf, not a valid element
 		}
 
-		let origin = closest(element, isRelative)
-		if (!origin) {
-			return // element is out of flow
-		}
-
-		let container = closest(origin, isOverflowBox).getBoundingClientRect()
+		let containerBox = container.getBoundingClientRect()
 		let originalClassName = element.className || ''
-		let cleanClassName = originalClassName.replace(removeClassNamesRegexp, ' ').trim()
+		let cleanClassName = originalClassName.replace(removeClassNamesRegexp, '')
 		classNames
 			.some((className) => {
-				element.className = `${cleanClassName} ${className}`
-
-				return containsBox(container, element.getBoundingClientRect())
+				element.className = cleanClassName && `${cleanClassName} ${className}` || className
+				//console.log(coverBox(containerBox, element.getBoundingClientRect()))
+				return constraint(containerBox, element.getBoundingClientRect())
 			}) || (element.className = originalClassName)
+
+		return element
 	}
 }
