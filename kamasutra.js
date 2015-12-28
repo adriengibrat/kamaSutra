@@ -4,22 +4,22 @@
 	global.kamasutra = factory();
 }(this, function () { 'use strict';
 
-	var styleProperty = function styleProperty(element, property) {
-		return window.getComputedStyle(element, null).getPropertyValue(property);
-	};
+	/* globals getComputedStyle */
+
 	var isRelative = function isRelative(element) {
-		return styleProperty(element, 'position') === 'relative';
+		return getComputedStyle(element).getPropertyValue('position') === 'relative';
 	};
 	var isOverflowBox = function isOverflowBox(element) {
-		return styleProperty(element, 'overflow') !== 'visible' || element === document.body;
+		return element === document.body || getComputedStyle(element).getPropertyValue('overflow') !== 'visible';
 	};
+
 	var closest = function closest(element, predicate) {
 		while (element && !predicate(element)) {
 			element = element.parentElement;
 		}
-
 		return element;
 	};
+
 	var arrayUnique = (function (predicate) {
 		return function (array) {
 			return array.filter(predicate);
@@ -27,38 +27,48 @@
 	})(function (value, index, array) {
 		return array.indexOf(value, index + 1) < 0;
 	});
-	var spaceRegEx = /\s+/;
-	var getContainer = function getContainer(element) {
-		return closest(closest(element, isRelative) || element.parentElement, isOverflowBox);
-	};
+
 	var containsBox = function containsBox(container, box) {
 		return container.top <= box.top && container.right >= box.right && container.bottom >= box.bottom && container.left <= box.left;
 	};
-	var index = (function (classNames) {
-		var constraint = arguments.length <= 1 || arguments[1] === undefined ? containsBox : arguments[1];
 
-		var removeClassNamesRegexp = new RegExp('\\s*\\b(?:' + arrayUnique(classNames.join(' ').split(spaceRegEx)).join('|') + ')\\b', 'g');
+	var spaceRegEx = /\s+/;
+
+	var overflowContainer = function overflowContainer(element) {
+		return closest(closest(element, isRelative) || element.parentElement, isOverflowBox);
+	};
+
+	function kamaSutra() {
+		for (var _len = arguments.length, classNames = Array(_len), _key = 0; _key < _len; _key++) {
+			classNames[_key] = arguments[_key];
+		}
+
+		var uniqueClassnames = arrayUnique(classNames.join(' ').split(spaceRegEx));
+		var removeClassNamesRegexp = new RegExp('\\s*\\b(?:' + uniqueClassnames.join('|') + ')\\b', 'g');
 
 		return function (element) {
-			var container = arguments.length <= 1 || arguments[1] === undefined ? getContainer(element) : arguments[1];
+			var container = arguments.length <= 1 || arguments[1] === undefined ? overflowContainer(element) : arguments[1];
 
 			if (!element || element.nodeType !== Node.ELEMENT_NODE || !element.parentElement) {
-				return; // wtf, not a valid element
+				throw TypeError('first argmument is not a valid DOM element');
 			}
 
 			var containerBox = container.getBoundingClientRect();
 			var originalClassName = element.className || '';
 			var cleanClassName = originalClassName.replace(removeClassNamesRegexp, '');
-			classNames.some(function (className) {
-				element.className = cleanClassName && cleanClassName + ' ' + className || className;
-				//console.log(coverBox(containerBox, element.getBoundingClientRect()))
-				return constraint(containerBox, element.getBoundingClientRect());
-			}) || (element.className = originalClassName);
+			var optimalPosition = classNames.some(function (className) {
+				element.className = cleanClassName ? cleanClassName + ' ' + className : className;
+				return containsBox(containerBox, element.getBoundingClientRect());
+			});
 
-			return element;
+			if (!optimalPosition) {
+				element.className = originalClassName;
+			}
 		};
-	})
+	}
 
-	return index;
+	kamaSutra.overflowContainer = overflowContainer;
+
+	return kamaSutra;
 
 }));
