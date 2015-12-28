@@ -1,4 +1,4 @@
-/* globals getComputedStyle */
+/* globals document, getComputedStyle */
 
 export const isRelative = (element) => getComputedStyle(element).getPropertyValue('position') === 'relative'
 export const isOverflowBox = (element) => element === document.body || getComputedStyle(element).getPropertyValue('overflow') !== 'visible'

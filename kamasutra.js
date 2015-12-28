@@ -4,7 +4,7 @@
 	global.kamasutra = factory();
 }(this, function () { 'use strict';
 
-	/* globals getComputedStyle */
+	/* globals document, getComputedStyle */
 
 	var isRelative = function isRelative(element) {
 		return getComputedStyle(element).getPropertyValue('position') === 'relative';
