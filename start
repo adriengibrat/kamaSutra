@@ -5,6 +5,8 @@ var bundler = require('rollup'),
 	npm = require('rollup-plugin-npm'),
 	commonjs = require('rollup-plugin-commonjs')
 
+global.Promise || (global.Promise = require('promise/lib/es6-extensions'))
+
 function build (entry, dest, format, moduleName) {
 	return bundler
 		.rollup({
