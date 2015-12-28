@@ -1,6 +1,6 @@
 {
   "name": "kamasutra",
-  "version": "0.0.1",
+  "version": "1.0.0",
   "description": "Always choose the best position",
   "main": "kamasutra.js",
   "jsnext:main": "src/index.js",
