@@ -10,7 +10,7 @@ export default function kamaSutra (...classNames) {
 
 	return (element, container = overflowContainer(element)) => {
 		if (!element || element.nodeType !== Node.ELEMENT_NODE || !element.parentElement) {
-			return // wtf, not a valid element
+			throw TypeError('first argmument is not a valid DOM element')
 		}
 
 		let containerBox = container.getBoundingClientRect()
