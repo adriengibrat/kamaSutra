@@ -25,6 +25,8 @@ export default function kamaSutra (...classNames) {
 		if (!optimalPosition) {
 			element.className = originalClassName
 		}
+		
+		return optimalPosition
 	}
 }
 
