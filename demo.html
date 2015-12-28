@@ -3,7 +3,12 @@
     <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>kamasutra demo</title>
+    <style type="text/css">
+      .top { top: -100%; }
+      .right { right: 100px; }
+      .bottom { bottom: -100%; }
+      .left { left: 100px; }
+    </style>
   </head>
   <body>
 
@@ -13,20 +18,14 @@
       </p>
     </div>
 
-    <style type="text/css">
-    .top { top: -100%; }
-    .right { right: 100px; }
-    .bottom { bottom: -100%; }
-    .left { left: 100px; }
-    </style>
-
     <script type="text/javascript" src="kamasutra.js"></script>
     <script type="text/javascript">
-      var position = kamasutra(['top left', 'top', 'bottom left', 'right', 'bottom']),
-        element = document.getElementById('tooltip')
-      //setInterval(() =>
-        position(element)
-      //, 1000)
+      var position = kamasutra('top left', 'top', 'bottom left', 'right', 'bottom'),
+        element = document.getElementById('tooltip'),
+        container = kamasutra.overflowContainer(element)
+      ;
+      container.addEventListener('scroll', position.bind(null, element, container), false);
+      position(element, container);
     </script>
   </body>
 </html>
