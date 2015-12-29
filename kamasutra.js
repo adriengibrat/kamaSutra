@@ -37,14 +37,30 @@
 	var overflowContainer = function overflowContainer(element) {
 		return closest(closest(element, isRelative) || element.parentElement, isOverflowBox);
 	};
-
-	function kamaSutra() {
-		for (var _len = arguments.length, classNames = Array(_len), _key = 0; _key < _len; _key++) {
-			classNames[_key] = arguments[_key];
+	var applyClasses = function applyClasses(element) {
+		for (var _len = arguments.length, classNames = Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
+			classNames[_key - 1] = arguments[_key];
 		}
 
-		var uniqueClassnames = arrayUnique(classNames.join(' ').split(spaceRegEx));
+		var uniqueClassnames = arrayUnique(classNames.join(' ').split(spaceRegEx)).filter(Boolean);
 		var removeClassNamesRegexp = new RegExp('\\s*\\b(?:' + uniqueClassnames.join('|') + ')\\b', 'g');
+		var originalClassName = element.className || '';
+		var cleanClassName = originalClassName.replace(removeClassNamesRegexp, '');
+		var actions = classNames.map(function (className) {
+			return function () {
+				return element.className = className + ' ' + cleanClassName;
+			};
+		});
+		actions.push(function () {
+			return element.className = originalClassName;
+		});
+		return actions;
+	};
+
+	function kamaSutra(element) {
+		for (var _len2 = arguments.length, actions = Array(_len2 > 1 ? _len2 - 1 : 0), _key2 = 1; _key2 < _len2; _key2++) {
+			actions[_key2 - 1] = arguments[_key2];
+		}
 
 		return function (element) {
 			var container = arguments.length <= 1 || arguments[1] === undefined ? overflowContainer(element) : arguments[1];
@@ -54,20 +70,15 @@
 			}
 
 			var containerBox = container.getBoundingClientRect();
-			var originalClassName = element.className || '';
-			var cleanClassName = originalClassName.replace(removeClassNamesRegexp, '');
-			var optimalPosition = classNames.some(function (className) {
-				element.className = cleanClassName ? cleanClassName + ' ' + className : className;
+			return actions.some(function (action) {
+				action();
 				return containsBox(containerBox, element.getBoundingClientRect());
 			});
-
-			if (!optimalPosition) {
-				element.className = originalClassName;
-			}
 		};
 	}
 
 	kamaSutra.overflowContainer = overflowContainer;
+	kamaSutra.applyClasses = applyClasses;
 
 	return kamaSutra;
 
